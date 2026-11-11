@@ -4,7 +4,7 @@
 </style><header><div class="brand">WorldOf<b>Codes</b> Academy</div><nav aria-label="Workspace"></nav></header><main><div class="bar"><label>Demo player <select id="player"></select></label><strong id="stats"></strong></div><section class="hero"><h1 id="title"></h1><p id="intro"></p></section><output id="notice" role="status"></output><section id="content"></section></main>
 <script type="module">
 const $=id=>document.getElementById(id), content=$('content'), player=$('player');
-const pages={lessons:['Lessons','Complete lessons in order to earn XP.'],problems:['Challenges','Solve a problem and submit your answer.'],profile:['My profile','Manage your academy profile and view your progress.'],leaderboard:['Leaderboard','Compare player XP and completed challenges.']};
+const pages={lessons:['Lessons','Complete lessons in order to earn XP.'],problems:['Challenges','Solve a problem and submit your answer.'],profile:['My profile','Manage your academy profile and view your progress.']};
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let actor=Number(sessionStorage.player)||1, version=0;
 async function api(path,method='GET',body){
@@ -28,8 +28,6 @@ async function render(){
  html='<div class="grid">'+lessons.map(l=>{const locked=l.prerequisite_lesson_id&&!done.has(l.prerequisite_lesson_id);return '<article><small>'+escape(l.level)+' · '+l.xp_reward+' XP</small><h2>'+escape(l.title)+'</h2><p>'+escape(l.description)+'</p><button data-lesson="'+l.id+'" data-done="'+done.has(l.id)+'" '+(locked?'disabled':'')+'>'+(done.has(l.id)?'Reset completion':locked?'Complete prerequisite first':'Complete lesson')+'</button></article>'}).join('')+'</div>';
  }else if(key==='problems'){
  const problems=await api('problems');html='<div class="grid">'+problems.map(p=>'<article><small>'+escape(p.difficulty)+' · '+p.xp_reward+' XP · '+p.coin_reward+' coins</small><h2>'+escape(p.title)+'</h2><p>'+escape(p.prompt)+'</p><form data-problem="'+p.id+'"><label>Your answer<input name="answer" required maxlength="200"></label><button>Submit answer</button></form></article>').join('')+'</div>';
- }else if(key==='leaderboard'){
- const ranks=await api('users/leaderboard');html='<article><table><thead><tr><th>Rank</th><th>Player</th><th>XP</th><th>Solved</th></tr></thead><tbody>'+ranks.map(r=>'<tr><td>'+r.rank+'</td><td>'+escape(r.nickname)+'</td><td>'+r.xp+'</td><td>'+r.solved_problems+'</td></tr>').join('')+'</tbody></table></article>';
  }else{
  const p=await api('users/'+actor+'/profile');html='<div class="grid"><article><h2>'+escape(p.nickname)+'</h2><p>'+p.completed_lessons+' lessons completed · '+p.solved_problems+' problems solved</p><form id="edit"><label>Nickname<input name="nickname" minlength="3" maxlength="20" required value="'+escape(p.nickname)+'"></label><label>Bio<textarea name="bio" maxlength="280">'+escape(p.bio)+'</textarea></label><button>Save profile</button></form></article><article><h2>Create a demo player</h2><form id="create"><label>Nickname<input name="nickname" required minlength="3" maxlength="20"></label><label>Email<input name="email" type="email" required></label><label>Demo password<input name="password" type="password" required minlength="8" placeholder="8+ characters, letters and digits"></label><button>Create player</button></form></article></div>';
  }
