@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from pathlib import Path
+from fastapi.responses import FileResponse, JSONResponse
 
 from errors import DomainError
 from routers import lessons, problems, users
@@ -43,7 +44,9 @@ async def domain_error_handler(request: Request, exc: DomainError) -> JSONRespon
 
 
 @app.get("/", tags=["meta"])
-def service_index() -> dict:
+def service_index(request: Request):
+    if "text/html" in request.headers.get("accept", ""):
+        return FileResponse(Path(__file__).parent / "site" / "index.html")
     return {
         "service": "fastapi-backend",
         "storage": "in-memory",

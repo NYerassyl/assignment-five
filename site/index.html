@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WorldOfCodes Academy</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f2eb;color:#202a24;font:16px/1.55 system-ui,sans-serif}header{background:#20362c;color:white;padding:18px max(5vw,20px);display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.brand{font-weight:800;font-size:21px;letter-spacing:-1px}.brand b{color:#f7bc78}nav{display:flex;gap:6px;flex-wrap:wrap}nav a{padding:7px 12px;color:#dce7dd;text-decoration:none;border-radius:20px}nav a[aria-current=page]{color:#20362c;background:#eff4e6}main{max-width:1040px;margin:auto;padding:32px 20px 70px}.bar,article,.hero{border-radius:18px}.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.hero{padding:clamp(24px,5vw,50px);background:#e0e8d6;margin:22px 0}.hero h1{font:normal clamp(36px,6vw,62px)/1.05 Georgia,serif;margin:0 0 12px}.hero p{margin:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(270px,100%),1fr));gap:16px}article{padding:22px;background:#fffefa;border:1px solid #deded1}h2{margin:6px 0;font-size:22px}small{color:#576453}label{display:grid;gap:4px;font-weight:600}input,textarea,select,button{font:inherit;border-radius:9px;padding:8px 12px}input,textarea,select{border:1px solid #aeb7ac;background:white;max-width:100%}button{border:none;background:#28533d;color:white;cursor:pointer}button:disabled{opacity:.52}form{display:grid;gap:12px}output{display:block;color:#294f39;font-weight:600}output:not(:empty){padding:12px 0}table{width:100%;text-align:left;border-collapse:collapse}td,th{padding:10px;border-bottom:1px solid #ddd}summary{cursor:pointer;font-weight:650;margin-bottom:12px}p{overflow-wrap:anywhere}
+</style><header><div class="brand">WorldOf<b>Codes</b> Academy</div><nav aria-label="Workspace"></nav></header><main><div class="bar"><label>Demo player <select id="player"></select></label><strong id="stats"></strong></div><section class="hero"><h1 id="title"></h1><p id="intro"></p></section><output id="notice" role="status"></output><section id="content"></section></main>
+<script type="module">
+const $=id=>document.getElementById(id), content=$('content'), player=$('player');
+const pages={lessons:['Lessons','Complete lessons in order to earn XP.'],problems:['Challenges','Solve a problem and submit your answer.'],profile:['My profile','Manage your academy profile and view your progress.'],leaderboard:['Leaderboard','Compare player XP and completed challenges.']};
+const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let actor=Number(sessionStorage.player)||1, version=0;
+async function api(path,method='GET',body){
+ const r=await fetch('/api/'+path,{method,cache:'no-store',headers:{'Content-Type':'application/json','X-User-Id':String(actor)},body:body===undefined?undefined:JSON.stringify(body)});
+ if(r.status===204)return;
+ const data=await r.json();if(!r.ok)throw Error(data.error?.message||data.detail?.[0]?.msg||'Request failed');return data;
+}
+document.querySelector('nav').innerHTML=Object.entries(pages).map(([id,[name]])=>'<a href="#'+id+'">'+name+'</a>').join('');
+async function render(){
+ const seq=++version, key=Object.hasOwn(pages,location.hash.slice(1))?location.hash.slice(1):'lessons';
+ $('title').textContent=pages[key][0];$('intro').textContent=pages[key][1];content.textContent='Loading…';
+ document.querySelectorAll('nav a').forEach(a=>a.setAttribute('aria-current',a.hash==='#'+key?'page':'false'));
+ try{
+ const users=await api('users');if(seq!==version)return;
+ if(!users.some(u=>u.id===actor))actor=users[0]?.id;
+ player.innerHTML=users.map(u=>'<option value="'+u.id+'">'+escape(u.nickname)+'</option>').join('');player.value=actor;
+ const me=users.find(u=>u.id===actor);$('stats').textContent=me?me.xp+' XP · '+me.coins+' coins':'';
+ let html='';
+ if(key==='lessons'){
+ const [lessons,progress]=await Promise.all([api('lessons'),api('users/'+actor+'/progress')]);const done=new Set(progress.completed_lessons.map(l=>l.lesson_id));
+ html='<div class="grid">'+lessons.map(l=>{const locked=l.prerequisite_lesson_id&&!done.has(l.prerequisite_lesson_id);return '<article><small>'+escape(l.level)+' · '+l.xp_reward+' XP</small><h2>'+escape(l.title)+'</h2><p>'+escape(l.description)+'</p><button data-lesson="'+l.id+'" data-done="'+done.has(l.id)+'" '+(locked?'disabled':'')+'>'+(done.has(l.id)?'Reset completion':locked?'Complete prerequisite first':'Complete lesson')+'</button></article>'}).join('')+'</div>';
+ }else if(key==='problems'){
+ const problems=await api('problems');html='<div class="grid">'+problems.map(p=>'<article><small>'+escape(p.difficulty)+' · '+p.xp_reward+' XP · '+p.coin_reward+' coins</small><h2>'+escape(p.title)+'</h2><p>'+escape(p.prompt)+'</p><form data-problem="'+p.id+'"><label>Your answer<input name="answer" required maxlength="200"></label><button>Submit answer</button></form></article>').join('')+'</div>';
+ }else if(key==='leaderboard'){
+ const ranks=await api('users/leaderboard');html='<article><table><thead><tr><th>Rank</th><th>Player</th><th>XP</th><th>Solved</th></tr></thead><tbody>'+ranks.map(r=>'<tr><td>'+r.rank+'</td><td>'+escape(r.nickname)+'</td><td>'+r.xp+'</td><td>'+r.solved_problems+'</td></tr>').join('')+'</tbody></table></article>';
+ }else{
+ const p=await api('users/'+actor+'/profile');html='<div class="grid"><article><h2>'+escape(p.nickname)+'</h2><p>'+p.completed_lessons+' lessons completed · '+p.solved_problems+' problems solved</p><form id="edit"><label>Nickname<input name="nickname" minlength="3" maxlength="20" required value="'+escape(p.nickname)+'"></label><label>Bio<textarea name="bio" maxlength="280">'+escape(p.bio)+'</textarea></label><button>Save profile</button></form></article><article><h2>Create a demo player</h2><form id="create"><label>Nickname<input name="nickname" required minlength="3" maxlength="20"></label><label>Email<input name="email" type="email" required></label><label>Demo password<input name="password" type="password" required minlength="8" placeholder="8+ characters, letters and digits"></label><button>Create player</button></form></article></div>';
+ }
+ if(seq===version)content.innerHTML=html;
+ }catch(e){if(seq===version)content.textContent=e.message}
+}
+async function action(control,fn){control.disabled=true;try{$('notice').textContent=await fn();await render()}catch(e){$('notice').textContent=e.message}finally{control.disabled=false}}
+content.onclick=e=>{const b=e.target.closest('[data-lesson]');if(!b)return;action(b,async()=>{const path='users/'+actor+'/progress';if(b.dataset.done==='true'){await api(path+'/'+b.dataset.lesson,'DELETE');return 'Completion reset.'}const v=await api(path,'POST',{lesson_id:Number(b.dataset.lesson)});return 'Lesson complete! +'+v.xp_awarded+' XP.'})};
+content.onsubmit=e=>{e.preventDefault();const f=e.target,values=Object.fromEntries(new FormData(f));action(f.querySelector('button'),async()=>{if(f.dataset.problem){const r=await api('problems/'+f.dataset.problem+'/submissions','POST',values);return r.message}if(f.id==='edit'){await api('users/'+actor,'PATCH',values);return 'Profile saved.'}const u=await api('users','POST',values);actor=u.id;sessionStorage.player=actor;return 'Player created.'})};
+player.onchange=()=>{actor=Number(player.value);sessionStorage.player=actor;$('notice').textContent='';render()};window.onhashchange=()=>{$('notice').textContent='';render()};render();
+</script></html>
