@@ -2,7 +2,6 @@ from fastapi import APIRouter, Query
 
 from routers.deps import ActorId
 from schemas import (
-    LeaderboardEntry,
     UserCreate,
     UserProfileResponse,
     UserResponse,
@@ -11,7 +10,6 @@ from schemas import (
 from services import (
     create_user,
     delete_user,
-    get_leaderboard,
     get_profile,
     get_user,
     list_users,
@@ -28,11 +26,6 @@ def list_users_route(
     limit: int = Query(default=50, ge=1, le=100),
 ) -> list:
     return list_users(store, q, limit)
-
-
-@router.get("/leaderboard", response_model=list[LeaderboardEntry])
-def leaderboard_route(limit: int = Query(default=10, ge=1, le=100)) -> list[dict]:
-    return get_leaderboard(store, limit)
 
 
 @router.post("", response_model=UserResponse, status_code=201)
@@ -53,7 +46,6 @@ def profile_route(user_id: int):
         completed_lessons=data["completed_lessons"],
         solved_problems=data["solved_problems"],
         accepted_submissions=data["accepted_submissions"],
-        rank=data["rank"],
     )
 
 

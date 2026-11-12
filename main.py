@@ -25,7 +25,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_tags=[
-        {"name": "users", "description": "Registration, profiles, updates and leaderboard."},
+        {"name": "users", "description": "Registration, profiles and updates."},
         {"name": "lessons", "description": "Lesson catalog management."},
         {"name": "progress", "description": "Per-user lesson completion and XP."},
         {"name": "problems", "description": "Problem catalog and submission review."},

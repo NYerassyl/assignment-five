@@ -9,6 +9,8 @@ Python, FastAPI and Pydantic power three workflows for a coding academy.
 The service stores related records in memory. Restarting it restores the seed data.
 Protected operations use the demo actor header `X-User-Id`.
 
+The browser frontend lives in `site/index.html`. Open the site root to use Lessons, Challenges and My profile with the same FastAPI service.
+
 ## Run
 
 From this repository, run:

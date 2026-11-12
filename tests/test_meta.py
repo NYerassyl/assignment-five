@@ -3,7 +3,6 @@ REQUIRED_PATHS = [
     "/api/users",
     "/api/users/{user_id}",
     "/api/users/{user_id}/profile",
-    "/api/users/leaderboard",
     "/api/lessons",
     "/api/lessons/{lesson_id}",
     "/api/users/{user_id}/progress",

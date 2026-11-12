@@ -64,16 +64,6 @@ def test_list_users_and_search(client):
     assert client.get("/api/users", params={"limit": 0}).status_code == 422
 
 
-def test_leaderboard_is_not_captured_by_user_id_route(client):
-    response = client.get("/api/users/leaderboard")
-    assert response.status_code == 200
-    entries = response.json()
-    assert entries[0]["nickname"] == "ada"
-    assert entries[0]["rank"] == 1
-    assert entries[0]["xp"] == 30
-    assert entries[0]["solved_problems"] == 1
-
-
 def test_unknown_user_returns_404(client):
     response = client.get("/api/users/999")
     assert response.status_code == 404
@@ -132,7 +122,6 @@ def test_profile_aggregates_progress_and_rank(client):
     assert body["completed_lessons"] == 1
     assert body["solved_problems"] == 1
     assert body["accepted_submissions"] == 1
-    assert body["rank"] == 1
 
 
 def test_delete_requires_owner(client):

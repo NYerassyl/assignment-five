@@ -139,30 +139,7 @@ def get_profile(store: Storage, user_id: int) -> dict:
             "completed_lessons": completed_lessons,
             "solved_problems": len({submission.problem_id for submission in accepted}),
             "accepted_submissions": len(accepted),
-            "rank": 1 + sum(1 for other in store.users.values() if other.xp > user.xp),
         }
-
-
-def get_leaderboard(store: Storage, limit: int = 10) -> list[dict]:
-    with store.lock:
-        accepted_problems: dict[int, set[int]] = {}
-        for submission in store.submissions.values():
-            if submission.verdict == "ACCEPTED":
-                accepted_problems.setdefault(submission.user_id, set()).add(
-                    submission.problem_id
-                )
-        ranked = sorted(store.users.values(), key=lambda user: (-user.xp, user.id))
-        return [
-            {
-                "rank": index,
-                "user_id": user.id,
-                "nickname": user.nickname,
-                "xp": user.xp,
-                "coins": user.coins,
-                "solved_problems": len(accepted_problems.get(user.id, set())),
-            }
-            for index, user in enumerate(ranked[:limit], start=1)
-        ]
 
 
 def list_lessons(

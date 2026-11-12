@@ -102,16 +102,6 @@ class UserProfileResponse(UserResponse):
     completed_lessons: int
     solved_problems: int
     accepted_submissions: int
-    rank: int
-
-
-class LeaderboardEntry(ApiModel):
-    rank: int
-    user_id: int
-    nickname: str
-    xp: int
-    coins: int
-    solved_problems: int
 
 
 class LessonCreate(ApiModel):
