@@ -13,6 +13,7 @@ async function api(path,method='GET',body){
  const data=await r.json();if(!r.ok)throw Error(data.error?.message||data.detail?.[0]?.msg||'Request failed');return data;
 }
 document.querySelector('nav').innerHTML=Object.entries(pages).map(([id,[name]])=>'<a href="#'+id+'">'+name+'</a>').join('');
+const createPlayerForm = '<article><h2>Create a player</h2><form id="create"><label>Nickname<input name="nickname" required minlength="3" maxlength="20"></label><label>Email<input name="email" type="email" required></label><label>Demo password<input name="password" type="password" required minlength="8" placeholder="8+ characters, letters and digits"></label><button>Create player</button></form></article>';
 async function render(){
  const seq=++version, key=Object.hasOwn(pages,location.hash.slice(1))?location.hash.slice(1):'lessons';
  $('title').textContent=pages[key][0];$('intro').textContent=pages[key][1];content.textContent='Loading…';
@@ -23,13 +24,14 @@ async function render(){
  player.innerHTML=users.map(u=>'<option value="'+u.id+'">'+escape(u.nickname)+'</option>').join('');player.value=actor;
  const me=users.find(u=>u.id===actor);$('stats').textContent=me?me.xp+' XP · '+me.coins+' coins':'';
  let html='';
+ if(!me){player.innerHTML='<option>No players yet</option>';content.innerHTML=createPlayerForm;return;}
  if(key==='lessons'){
  const [lessons,progress]=await Promise.all([api('lessons'),api('users/'+actor+'/progress')]);const done=new Set(progress.completed_lessons.map(l=>l.lesson_id));
  html='<div class="grid">'+lessons.map(l=>{const locked=l.prerequisite_lesson_id&&!done.has(l.prerequisite_lesson_id);return '<article><small>'+escape(l.level)+' · '+l.xp_reward+' XP</small><h2>'+escape(l.title)+'</h2><p>'+escape(l.description)+'</p><button data-lesson="'+l.id+'" data-done="'+done.has(l.id)+'" '+(locked?'disabled':'')+'>'+(done.has(l.id)?'Reset completion':locked?'Complete prerequisite first':'Complete lesson')+'</button></article>'}).join('')+'</div>';
  }else if(key==='problems'){
  const problems=await api('problems');html='<div class="grid">'+problems.map(p=>'<article><small>'+escape(p.difficulty)+' · '+p.xp_reward+' XP · '+p.coin_reward+' coins</small><h2>'+escape(p.title)+'</h2><p>'+escape(p.prompt)+'</p><form data-problem="'+p.id+'"><label>Your answer<input name="answer" required maxlength="200"></label><button>Submit answer</button></form></article>').join('')+'</div>';
  }else{
- const p=await api('users/'+actor+'/profile');html='<div class="grid"><article><h2>'+escape(p.nickname)+'</h2><p>'+p.completed_lessons+' lessons completed · '+p.solved_problems+' problems solved</p><form id="edit"><label>Nickname<input name="nickname" minlength="3" maxlength="20" required value="'+escape(p.nickname)+'"></label><label>Bio<textarea name="bio" maxlength="280">'+escape(p.bio)+'</textarea></label><button>Save profile</button></form></article><article><h2>Create a demo player</h2><form id="create"><label>Nickname<input name="nickname" required minlength="3" maxlength="20"></label><label>Email<input name="email" type="email" required></label><label>Demo password<input name="password" type="password" required minlength="8" placeholder="8+ characters, letters and digits"></label><button>Create player</button></form></article></div>';
+ const p=await api('users/'+actor+'/profile');html='<div class="grid"><article><h2>'+escape(p.nickname)+'</h2><p>'+p.completed_lessons+' lessons completed · '+p.solved_problems+' problems solved</p><form id="edit"><label>Nickname<input name="nickname" minlength="3" maxlength="20" required value="'+escape(p.nickname)+'"></label><label>Bio<textarea name="bio" maxlength="280">'+escape(p.bio)+'</textarea></label><button>Save profile</button></form></article>' + createPlayerForm + '</div>';
  }
  if(seq===version)content.innerHTML=html;
  }catch(e){if(seq===version)content.textContent=e.message}

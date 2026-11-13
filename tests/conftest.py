@@ -12,7 +12,10 @@ from storage import store  # noqa: E402
 
 @pytest.fixture()
 def client():
+    from tests.helpers import populated_store
+
     store.reset()
+    populated_store(store)
     with TestClient(app) as test_client:
         yield test_client
 

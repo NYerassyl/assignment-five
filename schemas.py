@@ -144,7 +144,7 @@ class LessonResponse(ApiModel):
     xp_reward: int
     prerequisite_lesson_id: int | None
     published: bool
-    author_id: int
+    author_id: int | None
     created_at: datetime
 
 
@@ -211,7 +211,7 @@ class ProblemResponse(ApiModel):
     topic: str
     xp_reward: int
     coin_reward: int
-    author_id: int
+    author_id: int | None
     created_at: datetime
 
 

@@ -14,8 +14,7 @@ all data in memory. Restarting the process restores the seeded demo data.
 
 ## Demo authentication
 
-Mutations and submissions read the `X-User-Id` header. Seeded users are `1`
-(ada) and `2` (grace). Unknown, missing or non-numeric headers are rejected.
+Mutations and submissions read the `X-User-Id` header. Create a player first and use its returned ID. Unknown, missing or non-numeric headers are rejected.
 """
 
 app = FastAPI()

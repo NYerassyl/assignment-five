@@ -34,7 +34,7 @@ class LessonRecord:
     level: str
     topic: str
     xp_reward: int
-    author_id: int
+    author_id: int | None
     prerequisite_lesson_id: int | None = None
     published: bool = True
     created_at: datetime = field(default_factory=utcnow)
@@ -58,7 +58,7 @@ class ProblemRecord:
     expected_answer: str
     xp_reward: int
     coin_reward: int
-    author_id: int
+    author_id: int | None
     created_at: datetime = field(default_factory=utcnow)
 
 
@@ -115,22 +115,6 @@ class Storage:
         return value
 
     def _seed(self) -> None:
-        ada = UserRecord(
-            id=self.new_user_id(),
-            email="ada@worldofcodes.dev",
-            nickname="ada",
-            password_hash=hash_password("ada-password-1"),
-            bio="Learning Python one lesson at a time.",
-        )
-        grace = UserRecord(
-            id=self.new_user_id(),
-            email="grace@worldofcodes.dev",
-            nickname="grace",
-            password_hash=hash_password("grace-password-2"),
-            bio="Interested in algorithms and compilers.",
-        )
-        self.users = {ada.id: ada, grace.id: grace}
-
         variables = LessonRecord(
             id=self.new_lesson_id(),
             title="Python Variables and Types",
@@ -138,7 +122,7 @@ class Storage:
             level="beginner",
             topic="basics",
             xp_reward=20,
-            author_id=ada.id,
+            author_id=None,
         )
         loops = LessonRecord(
             id=self.new_lesson_id(),
@@ -147,7 +131,7 @@ class Storage:
             level="beginner",
             topic="collections",
             xp_reward=30,
-            author_id=ada.id,
+            author_id=None,
             prerequisite_lesson_id=variables.id,
         )
         functions = LessonRecord(
@@ -157,7 +141,7 @@ class Storage:
             level="intermediate",
             topic="functions",
             xp_reward=40,
-            author_id=grace.id,
+            author_id=None,
             prerequisite_lesson_id=loops.id,
         )
         self.lessons = {lesson.id: lesson for lesson in (variables, loops, functions)}
@@ -171,7 +155,7 @@ class Storage:
             expected_answer="15",
             xp_reward=10,
             coin_reward=2,
-            author_id=ada.id,
+            author_id=None,
         )
         reverse_problem = ProblemRecord(
             id=self.new_problem_id(),
@@ -182,7 +166,7 @@ class Storage:
             expected_answer="[::-1]",
             xp_reward=15,
             coin_reward=3,
-            author_id=ada.id,
+            author_id=None,
         )
         lookup_problem = ProblemRecord(
             id=self.new_problem_id(),
@@ -193,32 +177,12 @@ class Storage:
             expected_answer="0",
             xp_reward=25,
             coin_reward=5,
-            author_id=grace.id,
+            author_id=None,
         )
         self.problems = {
             problem.id: problem
             for problem in (sum_problem, reverse_problem, lookup_problem)
         }
-
-        self.completions[(ada.id, variables.id)] = CompletionRecord(
-            user_id=ada.id, lesson_id=variables.id, xp_awarded=variables.xp_reward
-        )
-        ada.xp += variables.xp_reward
-
-        accepted = SubmissionRecord(
-            id=self.new_submission_id(),
-            problem_id=sum_problem.id,
-            user_id=ada.id,
-            answer="15",
-            verdict="ACCEPTED",
-            rewarded=True,
-            xp_awarded=sum_problem.xp_reward,
-            coins_awarded=sum_problem.coin_reward,
-            message="Seeded sample submission.",
-        )
-        self.submissions[accepted.id] = accepted
-        ada.xp += sum_problem.xp_reward
-        ada.coins += sum_problem.coin_reward
 
 
 store = Storage()

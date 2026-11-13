@@ -46,3 +46,21 @@ def test_service_index(client):
     body = client.get("/").json()
     assert body["docs"] == "/docs"
     assert body["storage"] == "in-memory"
+
+
+def test_clean_start_preserves_catalog_and_first_registration(client):
+    from storage import store
+
+    store.reset()
+    assert client.get("/api/users").json() == []
+    for resource in ("lessons", "problems"):
+        entries = client.get(f"/api/{resource}").json()
+        assert len(entries) == 3
+        assert all(entry["author_id"] is None for entry in entries)
+    assert not store.completions and not store.submissions
+    response = client.post("/api/users", json={
+        "nickname": "first", "email": "first@example.com", "password": "Password123"
+    })
+    assert response.status_code == 201
+    user = response.json()
+    assert (user["id"], user["xp"], user["coins"]) == (1, 0, 0)

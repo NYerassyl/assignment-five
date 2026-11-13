@@ -22,7 +22,7 @@ python3 -m venv .venv
 ```
 
 Open [Swagger UI](http://127.0.0.1:8000/docs). Select an operation, click **Try it out**, enter its parameters and click **Execute**.
-For example, submit `{"lesson_id":2}` to `POST /api/users/1/progress` with `X-User-Id: 1`. On a fresh server the first request returns 201, a duplicate returns 409 and using actor 2 returns 403.
+Create a player first. For the first registered player, submit `{"lesson_id":1}` to `POST /api/users/1/progress` with `X-User-Id: 1`. On a fresh server the first request returns 201, a duplicate returns 409 and using another registered player as actor returns 403.
 
 ## Tests
 
