@@ -18,21 +18,7 @@ Mutations and submissions read the `X-User-Id` header. Seeded users are `1`
 (ada) and `2` (grace). Unknown, missing or non-numeric headers are rejected.
 """
 
-app = FastAPI(
-    title="WorldOfCodes FastAPI Learning API",
-    description=DESCRIPTION,
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_tags=[
-        {"name": "users", "description": "Registration, profiles and updates."},
-        {"name": "lessons", "description": "Lesson catalog management."},
-        {"name": "progress", "description": "Per-user lesson completion and XP."},
-        {"name": "problems", "description": "Problem catalog and submission review."},
-        {"name": "submissions", "description": "Submission lookup."},
-        {"name": "meta", "description": "Health and service metadata."},
-    ],
-)
+app = FastAPI()
 
 
 @app.exception_handler(DomainError)
